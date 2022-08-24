@@ -2,6 +2,10 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
+// import { firebase } from '../firebase/firebase';
+import {addDoc, collection, doc, getDoc, getDocs, getFirestore, limit, orderBy, query, startAfter, startAt, updateDoc, where} from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import '../firebase/db'
 
 const Home: NextPage = () => {
   return (
