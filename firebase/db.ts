@@ -1,12 +1,12 @@
+// Importing important modules from the firebase node modules and firebase.ts
 import firebase from './firebase';
-import {addDoc, collection, doc, getDoc, getDocs, getFirestore, limit, orderBy, query, startAfter, startAt, updateDoc, where} from 'firebase/firestore';
+import {addDoc, collection, doc, getDoc, setDoc, getDocs, getFirestore, limit, orderBy, query, startAfter, startAt, updateDoc, where} from 'firebase/firestore';
 
+// Getting the firebase config
 const firestore = getFirestore(firebase);
 
-// Grabs collections from the database whenever it is called
-export const getCollection = async <T>(collectionName: string, lastElement: any,) => {
-    let dates: any[] = [];
-    const lastDocSnap = await getDoc((doc(firestore, lastElement)));
+// Grabs collections and all docs from the database whenever it is called
+export const getCollection = async <T>(collectionName: string) => {
     const docs = await getDocs(query(collection(firestore, collectionName)));
 
     docs.forEach(
@@ -19,6 +19,14 @@ export const getCollection = async <T>(collectionName: string, lastElement: any,
 }
 
 // Creates document in database whenever it is called.
-export const addDocument = async<T>(collectionName: string, data: T) => {
-    return await addDoc(collection(firestore, collectionName), data);
+export const addDocument = async<T>(collectionName: string, data: T, documentName: string) => {
+    console.log("Created Document");
+    return await setDoc(doc(firestore, collectionName, documentName), {
+        'data': data
+    })
+}
+
+export const createCollection = async(collectionName: string) => {
+    console.log("Created Collection");
+    return await collection(firestore, collectionName);
 }
