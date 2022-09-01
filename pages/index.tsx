@@ -5,7 +5,7 @@ import Image from 'next/image'
 const Home: NextPage = () => {
   return (
     <div>
-      <h1>Enable Javascript</h1>
+      
     </div>
   )
 }

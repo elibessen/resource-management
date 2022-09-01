@@ -1,4 +1,34 @@
 .contentContainer{
     display: flex;
     flex-direction: row;
+    gap: 1rem;
+}
+
+.mailContainer{
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    width: 30rem;
+}
+
+.mailContainer h1{
+    font-size: 1.5rem;
+}
+
+.calendarContainer{
+    border: 1px solid black;
+    font-size: 1rem;
+}
+
+.calendarContainer h1{
+    font-size: 1.5rem;
+}
+
+.fileContainer{
+    border: 1px solid black;
+    font-size: 1rem;
+}
+
+.fileContainer h1{
+    font-size: 1.5rem;
 }

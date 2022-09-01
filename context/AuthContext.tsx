@@ -5,9 +5,12 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from 'firebase/auth'
-import { auth } from '../firebase/firebase'
+import { auth } from '../firebase/firebase';
+import firebase from '../firebase/firebase';
+import {addDoc, collection, doc, getDoc, setDoc, getDocs, getFirestore, limit, orderBy, query, startAfter, startAt, updateDoc, where} from 'firebase/firestore';
 
-const AuthContext = createContext<any>({})
+const AuthContext = createContext<any>({});
+const firestore = getFirestore(firebase);
 
 export const useAuth = () => useContext(AuthContext)
 
@@ -22,11 +25,16 @@ export const AuthContextProvider = ({
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
+        setDoc(doc(firestore, 'Users', user.uid), {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName
+        });
         setUser({
           uid: user.uid,
           email: user.email,
           displayName: user.displayName,
-        })
+        });
       } else {
         setUser(null)
       }
