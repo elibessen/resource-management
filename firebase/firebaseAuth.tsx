@@ -5,9 +5,9 @@ import {addDoc, collection, doc, getDoc, setDoc, getDocs, getFirestore, limit, o
 const firestore = getFirestore(firebase);
 
 const formatAuthUser : any = (user:any) => ({
+  displayName: user.displayName,
   uid: user.uid,
-  email: user.email,
-  displayName: user.displayName
+  email: user.email
 });
 
 export default function useFirebaseAuth() {
@@ -34,6 +34,7 @@ export default function useFirebaseAuth() {
 
   const signInWithEmailAndPassword = (email:any, password:any) => {
     auth.signInWithEmailAndPassword(email, password);
+    console.log(auth);
   }
 
   const createUserWithEmailAndPassword = (email:any, password:any) => {

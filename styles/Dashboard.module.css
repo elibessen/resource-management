@@ -32,3 +32,24 @@
 .fileContainer h1{
     font-size: 1.5rem;
 }
+
+.innerMailContainer{
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid black;
+    width: 30rem;
+}
+
+.informationMailContainer{
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.informationMailContainer h4{
+    align-self: center;
+}
+
+.innerMailContainer p{
+    padding-top: 2rem;
+}
