@@ -5,7 +5,7 @@
 }
 
 .mailContainer{
-    border: 1px solid black;
+    border: 1px solid rgb(226, 226, 226);
     display: flex;
     flex-direction: column;
     width: 30rem;
@@ -25,8 +25,9 @@
 }
 
 .fileContainer{
-    border: 1px solid black;
+    border: 1px solid rgb(226, 226, 226);
     font-size: 1rem;
+    width: 30rem;
 }
 
 .fileContainer h1{
@@ -36,7 +37,7 @@
 .innerMailContainer{
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid rgb(226, 226, 226);
     width: 30rem;
 }
 
@@ -52,4 +53,24 @@
 
 .innerMailContainer p{
     padding-top: 2rem;
+}
+
+.mailForm{
+    display: flex;
+    flex-direction: column;
+}
+
+.fileImport{
+    width: 70%;
+}
+
+.fileImportForm{
+    display: flex;
+    flex-direction: row;
+}
+
+.loginForm{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }

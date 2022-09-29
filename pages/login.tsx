@@ -2,6 +2,7 @@ import { useRouter } from 'next/router'
 import React, { useState } from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { useAuth } from '../context/AuthContext'
+import styles from '../styles/Dashboard.module.css'
 
 const Login = () => {
   const router = useRouter()
@@ -30,8 +31,8 @@ const Login = () => {
         margin: 'auto',
       }}
     >
-      <h1 className="text-center my-3 ">Login</h1>
-      <Form onSubmit={handleLogin}>
+      <h1 className="text-center my-3 ">Resource Management</h1>
+      <Form onSubmit={handleLogin} className={styles.loginForm}>
         <Form.Group className="mb-3" controlId="formBasicEmail">
           <Form.Label>Email address</Form.Label>
           <Form.Control

@@ -4,6 +4,7 @@ import firebase from '../firebase/firebase';
 
 // Data being imported
 import emailData from '../data/mail'
+import fileData from '../data/files'
 import projects from '../data/projects'
 
 // Importing modules to be used in the dashboard
@@ -11,38 +12,30 @@ import React, { useState } from 'react';
 import {addDoc, collection, doc, getDoc, setDoc, getDocs, getFirestore, limit, orderBy, query, startAfter, startAt, updateDoc, where} from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../firebase/firebase';
-import { ref, getDownloadURL, uploadBytesResumable, listAll } from "firebase/storage"
+import { ref, getDownloadURL, uploadBytesResumable, listAll, getStorage } from "firebase/storage"
+import {Button, Table, Form} from 'react-bootstrap'
 
-// Importing custom modules
-import {getCollection} from '../firebase/db'
-
+// Importing custom components
+import SendMail from '../components/SendMail';
 
 const Dashboard = () => {
   // Getting the firebase config
   const firestore = getFirestore(firebase);
 
+  // Getting the user information from the auth
   const {user} = useAuth();
+  
+
+  // Setting states to the arrays so the mapping can reupdate
+  const [emailState, setEmailState] = useState(emailData);
+  const [filesState, setFilesState] = useState(fileData)
 
   // Dynamically show and hide components
   const [isShown, setIsShown] = useState(false);
+  // Checks if the element is shown or hidden
   const handleClick = (event:any)  => {
     setIsShown((current:any) => !current);
   }
-
-  const [imgUrl, setImgUrl] = useState(null);
-  const [progresspercent, setProgresspercent] = useState(0);
-
-  const bucketRef = ref(storage, 'files/');
-  listAll(bucketRef).then((res) => {
-    res.prefixes.forEach((folderRef) => {
-      
-    })
-    res.items.forEach((itemRef) => {
-
-    })
-  }).catch((error) => {
-    console.log(error)
-  })
 
   // When the user submits a file through the form
   const handleSubmit = (e:any) => {
@@ -57,95 +50,127 @@ const Dashboard = () => {
       // Creating a reference for the storage bucket in firebase
       const storageRef = ref(storage, `files/${file.name}`);
       
-      // Upload file to the storage bucket with the file =
+      // Upload file to the storage bucket with the file
       const uploadTask = uploadBytesResumable(storageRef, file);
 
+      console.log("Uploaded file: " + file)
+
+      // When the storage bucket state has changed run the following functions
       uploadTask.on("state_changed",
         (snapshot) => {
-          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          setProgresspercent(progress);
-          alert("Uploaded Successfully");
           setDoc(doc(firestore, 'files', file.name), {
+            fileName: file.name,
             dateAdded: Date()
           })
-          console.log(getCollection('files'))
         },
         (error) => {
           alert(error);
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL:any) => {
-            setImgUrl(downloadURL);
-          });
         }
       );
     };
 
-    console.log(getCollection('files'))
+    // Function that downloads specific files from the storage bucket
+    const handleDownload = (fileName: string) => {
+      // Create reference to the storage bucket
+      const storage = getStorage();
+      // Get the download url from the bucket
+      getDownloadURL(ref(storage, `files/${fileName}`)).then((url:any) => {
+        // Create a request to the server to download the file and its content
+        const xhr = new XMLHttpRequest();
+        xhr.responseType = 'blob';
+        xhr.onload = (event) => {
+          const blob = xhr.response;
+        };
+        xhr.open('GET', url);
+        xhr.send();
+      })
+    }
+
+    // handleDownload("272177W-2PYI20-AT1-DesignAndDeconstructMrSmith.docx")
+
 
   return (
     <div>
-      <select>
-        {/* {projects.map((e:any, index:any) => {
-          // console.log(e.project1.projectName)
-          console.log(e);
-          for(var i = 1; i < e.projectAmount; i++){
-            console.log(e.project1);
-            // <option key={`${e}`}>{e}</option>
-           }
-        })} */}
-      </select>
-      {/* <ul>
-        <li><a onClick={handleClick}>Send email</a></li>
-      </ul>
-      {isShown && (
-        <SendMail></SendMail>
-      )} */}
       <div id="content" className={styles.contentContainer}>
 
-        <div id="mail" className={styles.mailContainer}>
-          <div style={{borderBlockEnd:'1px solid black'}}>
-            <h1>Mail</h1>
+        <div>
+            <ul>
+              <Button variant="primary" onClick={handleClick}>Store Mail</Button>
+            </ul>
+              {isShown && (
+                <SendMail></SendMail>
+              )}
           </div>
-          
-          <div style={{width: '100vw'}}>
-            {emailData.map((e:any, index:any) => {
-              if(e.to === `${user.email}` || e.sender === `${user.email}`){
-                return(
-                  <p key={`${e.sender}_{e.content}`} className={styles.innerMailContainer}>
-                    <div className={styles.informationMailContainer}>
-                      {/* <h4>{acryonm}</h4> */}
-                      <div>
-                        <h5>
+
+        <div id="mail" className={styles.mailContainer}>
+          <Table>
+            <thead>
+              <tr>
+                <th>Mail</th>
+              </tr>
+            </thead>
+            <tbody>
+              {emailData.map((e:any, index:any) => {
+                // If the email is from or to the users current email when logged in and displays it accordingly
+                if(e.to === `${user.email}` || e.sender === `${user.email}`){
+                  return(
+                    // Returning the component to be rendered by next.js
+                    <div>
+                      <tr key={`${e.sender}_{e.content}`} className={styles.innerMailContainer}>
+                        <th>
                           From: {e.sender}
-                        </h5>
-                        <h5>
+                        </th>
+                        <th>
                           To: {e.to}
-                        </h5>
-                      </div>
+                        </th>
+                        <th>
+                          Subject: {e.subject}
+                        </th>
+                        <p id="emailContent">
+                          {e.content}
+                        </p>
+                      </tr>
                     </div>
-                    <p id="emailContent">
-                      {e.content}
-                    </p>
-                    <p>
-                    </p>
-                  </p>
-                )
-              }
-            })}
+                  )
+                }
+              })}
+            </tbody>
+          </Table>
+          <div style={{width: '100vw'}}>
+            {/* Mapping all the email data into independent components to be rendered by next.js */}
+            
           </div>
         </div>
 
         <div id="files" className={styles.fileContainer}>
-          <div style={{borderBlockEnd:'1px solid black'}}>
-            <h1>Files</h1>
-            <form onSubmit={handleSubmit}>
-              <input type='file' />
-              <button type='submit'>Upload</button>
-            </form>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>Files</th>
+                <th>
+                  <Form onSubmit={handleSubmit} className={styles.fileImportForm}>
+                    <Form.Control type='file' className={styles.fileImport}/>
+                    <Button variant="primary" type='submit'>Upload</Button>
+                  </Form>
+                </th>
+              </tr>
+            </thead>
+          </Table>
+          <div> 
+          {fileData.map((e:any, index:any) => {
+                return(
+                  // Returning the component to be rendered by next.js
+                  <p key={`${e.dateAdded}_{e.fileName}`}>
+                    <div>
+                      <div>
+                        <a>{e.fileName}</a>
+                      </div>
+                    </div>
+                  </p>
+                )
+            })}
           </div>
         </div>
-
       </div>
     </div>
   )
