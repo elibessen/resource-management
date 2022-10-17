@@ -3,20 +3,21 @@ import { Container, Nav, Navbar } from 'react-bootstrap'
 import Link from 'next/link'
 import { useAuth } from '../context/AuthContext'
 import { useRouter } from 'next/router'
+import {Button} from 'react-bootstrap'
 
 const NavbarComp = () => {
   const { user, logout } = useAuth()
   const router = useRouter()
 
   return (
-    <Navbar bg="light" expand="lg">
+    <Navbar bg="light">
       <Container>
         <Link href="/" passHref>
           <Navbar.Brand>Resource Management</Navbar.Brand>
         </Link>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
+        <Navbar.Toggle/>
+        <Navbar.Collapse>
+          <Nav>
             {user ? (
               <div>
                 <Nav.Link
@@ -26,6 +27,10 @@ const NavbarComp = () => {
                   }}
                 >
                   Logout
+                </Nav.Link>
+
+                <Nav.Link>
+                  Create Project
                 </Nav.Link>
               </div>
             ) : (

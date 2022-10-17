@@ -5,14 +5,14 @@ import firebase from '../firebase/firebase';
 // Data being imported
 import emailData from '../data/mail'
 import fileData from '../data/files'
-import projects from '../data/projects'
+import projectData from '../data/projects'
 
 // Importing modules to be used in the dashboard
 import React, { useState } from 'react';
 import {addDoc, collection, doc, getDoc, setDoc, getDocs, getFirestore, limit, orderBy, query, startAfter, startAt, updateDoc, where} from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../firebase/firebase';
-import { ref, getDownloadURL, uploadBytesResumable, listAll, getStorage } from "firebase/storage"
+import { ref, getDownloadURL, uploadBytesResumable, listAll, getStorage, deleteObject } from "firebase/storage"
 import {Button, Table, Form} from 'react-bootstrap'
 
 // Importing custom components
@@ -29,6 +29,8 @@ const Dashboard = () => {
   // Setting states to the arrays so the mapping can reupdate
   const [emailState, setEmailState] = useState(emailData);
   const [filesState, setFilesState] = useState(fileData)
+  // Getting the current project selected in the dropdown
+  const [value, setValue] = useState('Test Project 1')
 
   // Dynamically show and hide components
   const [isShown, setIsShown] = useState(false);
@@ -60,7 +62,8 @@ const Dashboard = () => {
         (snapshot) => {
           setDoc(doc(firestore, 'files', file.name), {
             fileName: file.name,
-            dateAdded: Date()
+            dateAdded: Date(),
+            project: value
           })
         },
         (error) => {
@@ -86,62 +89,78 @@ const Dashboard = () => {
       })
     }
 
-    // handleDownload("272177W-2PYI20-AT1-DesignAndDeconstructMrSmith.docx")
+    const handleDelete = (fileName: any) => {
+      // const storage = getStorage();
+      // const storageRef = ref(storage, `files/${fileName}`);
 
+      // deleteObject(storageRef).then(() => {
+      //   alert("Deleted successfully")
+      // }).catch((error) => {
+      //   alert("Couldn't delete file")
+      //   console.log(error);
+      // })
+    }
 
   return (
     <div>
       <div id="content" className={styles.contentContainer}>
-
         <div>
-            <ul>
-              <Button variant="primary" onClick={handleClick}>Store Mail</Button>
-            </ul>
-              {isShown && (
-                <SendMail></SendMail>
-              )}
-          </div>
-
+          {isShown && (
+            <SendMail></SendMail>
+          )}
+        </div>
+        <div>
+          <select value={value} onChange={(e) => {
+            setValue(e.target.value);
+          }}>
+            <option selected disabled>Select Project</option>
+            {projectData.map((e:any, index:any) => {
+              return( 
+                <option value={e.projectName}>{e.projectName}</option>  
+              ) 
+            })}
+          </select>
+        </div>
         <div id="mail" className={styles.mailContainer}>
           <Table>
             <thead>
               <tr>
-                <th>Mail</th>
+                <th>
+                  Mail
+                  <Button variant="primary" onClick={handleClick}>Store Mail</Button>
+                </th>
               </tr>
             </thead>
             <tbody>
               {emailData.map((e:any, index:any) => {
                 // If the email is from or to the users current email when logged in and displays it accordingly
                 if(e.to === `${user.email}` || e.sender === `${user.email}`){
-                  return(
-                    // Returning the component to be rendered by next.js
-                    <div>
-                      <tr key={`${e.sender}_{e.content}`} className={styles.innerMailContainer}>
-                        <th>
-                          From: {e.sender}
-                        </th>
-                        <th>
-                          To: {e.to}
-                        </th>
-                        <th>
-                          Subject: {e.subject}
-                        </th>
-                        <p id="emailContent">
-                          {e.content}
-                        </p>
-                      </tr>
-                    </div>
-                  )
-                }
+                  if(e.project === value){
+                    return(
+                      // Returning the component to be rendered by next.js
+                      <div>
+                        <tr key={`${e.sender}_{e.content}`} className={styles.innerMailContainer}>
+                          <th>
+                            From: {e.sender}
+                          </th>
+                          <th>
+                            To: {e.to}
+                          </th>
+                          <th>
+                            Subject: {e.subject}
+                          </th>
+                          <p id="emailContent">
+                            {e.content}
+                          </p>
+                        </tr>
+                      </div>
+                    )
+                  }
+                  }
               })}
             </tbody>
           </Table>
-          <div style={{width: '100vw'}}>
-            {/* Mapping all the email data into independent components to be rendered by next.js */}
-            
-          </div>
         </div>
-
         <div id="files" className={styles.fileContainer}>
           <Table striped bordered hover>
             <thead>
@@ -158,16 +177,17 @@ const Dashboard = () => {
           </Table>
           <div> 
           {fileData.map((e:any, index:any) => {
-                return(
-                  // Returning the component to be rendered by next.js
-                  <p key={`${e.dateAdded}_{e.fileName}`}>
+            if(e.project === value){
+              return(
+                <p key={`${e.dateAdded}_{e.fileName}`}>
+                  <div>
                     <div>
-                      <div>
-                        <a>{e.fileName}</a>
-                      </div>
+                      <a>{e.fileName}</a>
                     </div>
-                  </p>
+                  </div>
+                </p>
                 )
+            }
             })}
           </div>
         </div>

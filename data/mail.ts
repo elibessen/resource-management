@@ -7,7 +7,7 @@ const firestore = getFirestore(firebase);
 // Exporting this function so it can be reused later
 export const updateMailData = async () => {
     // Creating a reference to the specific doc in the database that I want to access
-    const reference  = doc(firestore, "mail", "mailData");
+    const reference = doc(firestore, "mail", "mailData");
     // Creating a snapshot of the data
     const snapshot = await getDoc(reference);
     // Creating a local object and pushing the snapshot data into it
