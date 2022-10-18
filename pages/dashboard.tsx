@@ -8,15 +8,15 @@ import fileData from '../data/files'
 import projectData from '../data/projects'
 
 // Importing modules to be used in the dashboard
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {addDoc, collection, doc, getDoc, setDoc, getDocs, getFirestore, limit, orderBy, query, startAfter, startAt, updateDoc, where} from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../firebase/firebase';
 import { ref, getDownloadURL, uploadBytesResumable, listAll, getStorage, deleteObject } from "firebase/storage"
 import {Button, Table, Form} from 'react-bootstrap'
 
-// Importing custom components
-import SendMail from '../components/SendMail';
+// Importing functions
+import updateMailData from "../data/mail";
 
 const Dashboard = () => {
   // Getting the firebase config
@@ -31,6 +31,11 @@ const Dashboard = () => {
   const [filesState, setFilesState] = useState(fileData)
   // Getting the current project selected in the dropdown
   const [value, setValue] = useState('Test Project 1')
+
+  // Listens to inputs from the form
+  const emailInputReference:any = useRef(null)
+  const subjectInputReference:any = useRef(null)
+  const contentInputReference:any = useRef(null);
 
   // Dynamically show and hide components
   const [isShown, setIsShown] = useState(false);
@@ -101,12 +106,47 @@ const Dashboard = () => {
       // })
     }
 
+
+    // When the user submits a new local object is created and is pushed into the mail data array
+    const submitMail = async () => {
+        var object = {
+            project: 'yo',
+            mailID: "Test",
+            sender: user.email,
+            subject: subjectInputReference.current.value,
+            to: emailInputReference.current.value,
+            content: contentInputReference.current.value
+        }
+        emailData.push(object);
+
+        // Once all the local data storage is completed the data will then be stored in firebase
+        return await setDoc(doc(firestore, 'mail', 'mailData'), {
+            'data': emailData
+        })
+
+        updateMailData();
+    }
+
   return (
     <div>
       <div id="content" className={styles.contentContainer}>
         <div>
           {isShown && (
-            <SendMail></SendMail>
+            <Form>
+                <Form.Group className="mb-3">
+                    <Form.Label>To:</Form.Label> 
+                    <Form.Control type="text" name="email address" ref={emailInputReference}></Form.Control>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                    <Form.Label>Subject:</Form.Label> 
+                    <Form.Control type="text" name="Subject" ref={subjectInputReference}></Form.Control>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                    <Form.Label>Content:</Form.Label> 
+                    <Form.Control type="text" name="Content" ref={contentInputReference}></Form.Control>
+                </Form.Group>
+                <Button variant="primary" type="submit" onClick={submitMail}>Submit</Button>
+            </Form>
           )}
         </div>
         <div>

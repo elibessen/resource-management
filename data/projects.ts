@@ -23,7 +23,7 @@ updateProjectData();
 
 // Local array for exporting
 const projects:any = [
-
+    
 ]
 
 export default projects
