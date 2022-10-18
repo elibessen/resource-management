@@ -7,9 +7,9 @@ import { storage } from '../firebase/firebase';
 const firestore = getFirestore(firebase);
 
 // Getting files from the database
-const getFileReference = async () => {
+export const getFileReference = async () => {
     var currentFile;
-
+    files = []
     // Awaiting for firebase to return a value for all the documents in the files collection
     const docs = await getDocs(query(collection(firestore, 'files')));
 
@@ -23,9 +23,9 @@ const getFileReference = async () => {
     )
   }
 
-getFileReference()
+getFileReference();
 
-const files:any = [
+var files:any = [
 
 ];
 

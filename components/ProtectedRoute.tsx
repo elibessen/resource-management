@@ -6,8 +6,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth()
   const router = useRouter()
 
-  // If the user is not logged in than this will protect the dasboard from
-  // being accessed
+  // If the user is not logged in than this will protect the dasboard from being accessed
   useEffect(() => {
     if (!user) {
       router.push('/login')

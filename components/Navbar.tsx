@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useAuth } from '../context/AuthContext'
 import { useRouter } from 'next/router'
 import {Button} from 'react-bootstrap'
+import styles from '../styles/Dashboard.module.css'
 
 const NavbarComp = () => {
   const { user, logout } = useAuth()
@@ -19,7 +20,12 @@ const NavbarComp = () => {
         <Navbar.Collapse>
           <Nav>
             {user ? (
-              <div>
+              <div className={styles.flexRow}>
+
+                <Nav.Link>
+                  Create Project
+                </Nav.Link>
+
                 <Nav.Link
                   onClick={() => {
                     logout()
@@ -27,10 +33,6 @@ const NavbarComp = () => {
                   }}
                 >
                   Logout
-                </Nav.Link>
-
-                <Nav.Link>
-                  Create Project
                 </Nav.Link>
               </div>
             ) : (

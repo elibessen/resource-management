@@ -26,14 +26,11 @@ const Login = () => {
 
   return (
     <div
-      style={{
-        width: '40%',
-        margin: 'auto',
-      }}
+      className={styles.loginComponent}
     >
       {/* A form when submited runs the authentication 
       to login the user if the credentials are correct */}
-      <h1 className="text-center my-3 ">Resource Management</h1>
+      <h2 className="text-center my-3 ">Resource Management</h2>
       <Form onSubmit={handleLogin} className={styles.loginForm}>
         <Form.Group className="mb-3" controlId="formBasicEmail">
           <Form.Label>Email address</Form.Label>

@@ -1,6 +1,6 @@
 .contentContainer{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     gap: 1rem;
 }
 
@@ -68,8 +68,36 @@
     flex-direction: row;
 }
 
+.loginComponent{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 35%;
+    margin: auto;
+    background: rgb(252, 252, 252);
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+    border: 1.5px solid rgb(237, 237, 237)
+}
+
 .loginForm{
     display: flex;
     flex-direction: column;
+    justify-content: center;
+}
+
+.flexRow{
+    display: flex;
+    flex-direction: row;
+}
+
+.componentContainer{
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.sendMailContainer{
+    display: flex;
     justify-content: center;
 }
