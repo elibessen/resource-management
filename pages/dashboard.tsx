@@ -32,7 +32,8 @@ const Dashboard = () => {
   
   // Setting states to the arrays so the mapping can reupdate
   const [emailState, setEmailState] = useState(emailData);
-  const [filesState, setFilesState] = useState(fileData)
+  const [filesState, setFilesState] = useState(fileData);
+
   // Getting the current project selected in the dropdown
   const [value, setValue] = useState('Test Project 1')
 
@@ -42,7 +43,6 @@ const Dashboard = () => {
   const contentInputReference:any = useRef(null);
 
   // Listens to inputs from the form
-
   const projectNameReference:any = useRef(null);
   const managerNameReference:any = useRef(null);
   const locationReference:any = useRef(null);
@@ -54,7 +54,7 @@ const Dashboard = () => {
   const handleEmailClose = () => setEmailModal(false);
   const handleEmailShow = () => setEmailModal(true);
 
-  // Create project modla
+  // Create project modal
   const [projectModal, setProjectModal] = useState(false);
   const handleProjectClose = () => setProjectModal(false);
   const handleProjectShow = () => setProjectModal(true);
@@ -99,8 +99,9 @@ const Dashboard = () => {
       );
     };
 
-    // When the user submits a new local object is created and is pushed into the mail data array
+    // When the user submits new mail to be stored a new local object is created and is pushed into the mail data array
     const submitMail = async () => {
+      // Creating an object with all of the data supplied by the user
         var object = {
             project: value,
             mailID: "Test",
@@ -115,11 +116,11 @@ const Dashboard = () => {
         return await setDoc(doc(firestore, 'mail', 'mailData'), {
             'data': emailData
         })
-
-        updateMailData();
     }
 
+    // When the user submits a new project fun the following function
     const submitProject = async () => {
+      // Creating an object with all of the data supplied by the user
       var object = {
         dueDate: completiondateReference.current.value,
         projectClient: clientReference.current.value,
@@ -130,7 +131,7 @@ const Dashboard = () => {
       }
       projectData.push(object)
       setProjectModal(false)
-      
+      // Once all the local data is stored then it will be stored within the database
       return await setDoc(doc(firestore, 'projects', 'projectsData'), {
         'data': projectData
       })
@@ -139,7 +140,7 @@ const Dashboard = () => {
   return (
     <Container fluid>
       <div>
-        
+        {/* A modal/popup for submition form */}
         <Modal show={emailModal} onHide={handleEmailClose} className={styles.flexColumn}>
           <Modal.Header closeButton>
             <Modal.Title>Store mail</Modal.Title>
@@ -192,7 +193,6 @@ const Dashboard = () => {
             </Form.Group>
             <Button variant="primary" type="submit" onClick={submitProject}>Store</Button>
             </Form>
-
             <Button variant="secondary" onClick={handleProjectClose}>Cancel</Button>
           </Modal.Body>
         </Modal>
@@ -215,8 +215,35 @@ const Dashboard = () => {
               <Col md="auto">
                 <Button variant="outline-primary" onClick={handleProjectShow}>Create Project</Button>
               </Col>
-              <Col>
+              <Col md="auto">
                 <Button variant="outline-primary" onClick={handleEmailShow}>Store Mail</Button>
+              </Col>
+              <Col>
+                <Button variant="outline-danger" onClick={() => {
+                  // Loop through all of the projects
+                  for(var i=0; i<projectData.length; i++){
+                    // Check if any projects match the current selected project
+                    if(projectData[i].projectName === value){
+                      console.log("Found it", projectData[i]);
+                      // If the current status of the project is not closed then make it closed
+                      if(projectData[i].projectStatus != 'Closed'){
+                        projectData[i].projectStatus = 'Closed';
+                        console.log(projectData);
+                      } else{
+                        // Tells the user that the project is already closed
+                        alert("Project is already closed!")
+                      }
+                      // Break the for loop for efficiency
+                      break;
+                    }
+                  }
+                  const updateProjects = async () => {
+                    return await setDoc(doc(firestore, 'projects', 'projectsData'), {
+                      'data': projectData
+                    })
+                  }
+                  updateProjects()
+                }}>Close Project</Button>
               </Col>
             </Row>
           </Container>
@@ -225,10 +252,16 @@ const Dashboard = () => {
               <div className={styles.detailsContainer}>
                 <h4>Project Details</h4>
                 {projectData.map((e:any, index:any) => {
+                  if(e.projectStatus === 'Open'){
+
+                  }
                   if(e.projectName === value){
                     return(
                       <Container fluid>
                         <Row>
+                          <Col md="auto">
+                            <p>{e.projectStatus}</p>
+                          </Col>
                           <Col md="auto">
                             <p>Project Manager: {e.projectManager}</p>
                             <p>Client: {e.projectClient}</p>
@@ -283,12 +316,16 @@ const Dashboard = () => {
                                   <th>
                                     <a onClick={() => {
                                       console.log(emailData);
+                                      // Looping through all of the emails
                                       for(var i=0; i<emailData.length; i++){
                                         console.log(emailData[i])
+                                        // If an email matches the email that is clicked on
                                         if(emailData[i].mailID === e.mailID){
                                           console.log("Got it", e.mailID);
+                                          // Remove it from the array
                                           emailData.splice(i, 1)
                                           console.log(emailData)
+                                          // Break the for loop for better efficiency
                                           break;
                                         }
                                       }
@@ -367,13 +404,23 @@ const Dashboard = () => {
                                     deleteObject(storageRef).then(() => {
                                       // Was it successfull?
                                       alert(`Deleted ${e.fileName} successfully`)
+                                      console.log(fileData)
+                                      // Looping through the file object
+                                      for(var i=0; i<fileData.length; i++){
+                                        // If it matches any file then delete it
+                                        if(fileData[i].fileName === `${e.fileName}`){
+                                          fileData.splice(i, 1);
+                                          console.log(fileData)
+                                          // Break the for loop for effiency
+                                          break;
+                                        }
+                                      }
                                     }).catch((error) => {
                                       // Was there an error
                                       alert("Couldn't delete file")
                                       console.log(error);
                                     })  
-                                    // Force reload the page
-                                    window.location.reload()
+        
                                   }
                                   // Running the function
                                   handleFileDelete();
@@ -390,28 +437,6 @@ const Dashboard = () => {
               </Col>
             </Row>
           </Container>
-          
-          <div className={styles.sendMailContainer}>
-            {/* Shows when the user presses the button */}
-            {isShown && (
-              // A form for sending email
-              <Form className={styles.sendMailForm}>
-                <Form.Group className="mb-3">
-                    <Form.Label>To:</Form.Label> 
-                    <Form.Control type="text" name="email address" ref={emailInputReference}></Form.Control>
-                </Form.Group>
-                <Form.Group className="mb-3">
-                    <Form.Label>Subject:</Form.Label> 
-                    <Form.Control type="text" name="Subject" ref={subjectInputReference}></Form.Control>
-                </Form.Group>
-                <Form.Group className="mb-3">
-                    <Form.Label>Content:</Form.Label> 
-                    <Form.Control type="text" name="Content" ref={contentInputReference}></Form.Control>
-                </Form.Group>
-                <Button variant="primary" type="submit" onClick={submitMail}>Submit</Button>
-              </Form>
-            )}
-          </div>
         </div>
       </div>
     </Container>
