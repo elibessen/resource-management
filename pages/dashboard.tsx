@@ -13,8 +13,12 @@ import {deleteDoc, addDoc, collection, doc, getDoc, setDoc, getDocs, getFirestor
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../firebase/firebase';
 import {ref, getDownloadURL, uploadBytesResumable, listAll, getStorage, deleteObject } from "firebase/storage"
-import {Button, Table, Form} from 'react-bootstrap';
+import {Button, Table, Form, Dropdown } from 'react-bootstrap';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import Image from 'next/image';
+import Modal from 'react-bootstrap/Modal';
 
 // Importing functions
 import updateMailData from "../data/mail";
@@ -33,9 +37,27 @@ const Dashboard = () => {
   const [value, setValue] = useState('Test Project 1')
 
   // Listens to inputs from the form
-  const emailInputReference:any = useRef(null)
-  const subjectInputReference:any = useRef(null)
+  const emailInputReference:any = useRef(null);
+  const subjectInputReference:any = useRef(null);
   const contentInputReference:any = useRef(null);
+
+  // Listens to inputs from the form
+
+  const projectNameReference:any = useRef(null);
+  const managerNameReference:any = useRef(null);
+  const locationReference:any = useRef(null);
+  const completiondateReference:any = useRef(null);
+  const clientReference:any = useRef(null)
+
+  // Store email modal
+  const [emailModal, setEmailModal] = useState(false);
+  const handleEmailClose = () => setEmailModal(false);
+  const handleEmailShow = () => setEmailModal(true);
+
+  // Create project modla
+  const [projectModal, setProjectModal] = useState(false);
+  const handleProjectClose = () => setProjectModal(false);
+  const handleProjectShow = () => setProjectModal(true);
 
   // Dynamically show and hide components
   const [isShown, setIsShown] = useState(false);
@@ -77,23 +99,6 @@ const Dashboard = () => {
       );
     };
 
-    // Function that downloads specific files from the storage bucket
-    const handleDownload = (fileName: string) => {
-      // Create reference to the storage bucket
-      const storage = getStorage();
-      // Get the download url from the bucket
-      getDownloadURL(ref(storage, `files/${fileName}`)).then((url:any) => {
-        // Create a request to the server to download the file and its content
-        const xhr = new XMLHttpRequest();
-        xhr.responseType = 'blob';
-        xhr.onload = (event) => {
-          const blob = xhr.response;
-        };
-        xhr.open('GET', url);
-        xhr.send();
-      })
-    }
-
     // When the user submits a new local object is created and is pushed into the mail data array
     const submitMail = async () => {
         var object = {
@@ -105,7 +110,7 @@ const Dashboard = () => {
             content: contentInputReference.current.value
         }
         emailData.push(object);
-
+        setEmailModal(false);
         // Once all the local data storage is completed the data will then be stored in firebase
         return await setDoc(doc(firestore, 'mail', 'mailData'), {
             'data': emailData
@@ -114,170 +119,297 @@ const Dashboard = () => {
         updateMailData();
     }
 
+    const submitProject = async () => {
+      var object = {
+        dueDate: completiondateReference.current.value,
+        projectClient: clientReference.current.value,
+        projectID: "Test",
+        projectLocation: locationReference.current.value,
+        projectManager: managerNameReference.current.value,
+        projectName: projectNameReference.current.value
+      }
+      projectData.push(object)
+      setProjectModal(false)
+      
+      return await setDoc(doc(firestore, 'projects', 'projectsData'), {
+        'data': projectData
+      })
+    }
+
   return (
-    <div>
-      <div id="content" className={styles.contentContainer}>
-        <div>
-          <select value={value} onChange={(e) => {
-            setValue(e.target.value);
-          }}>
-            <option selected disabled>Select Project</option>
-            {projectData.map((e:any, index:any) => {
-              return( 
-                <option value={e.projectName}>{e.projectName}</option>  
-              ) 
-            })}
-          </select>
-          <div> 
-            <h4>Project Details</h4>
-            {projectData.map((e:any, index:any) => {
-              if(e.projectName === value){
-                return(
-                  <div>
-                    <p>Due date: {e.dueDate}</p>
-                    <p>Location: {e.projectLocation}</p>
-                  </div>
-                )
-              }
-            })}
+    <Container fluid>
+      <div>
+
+        <Modal show={emailModal} onHide={handleEmailClose} className={styles.flexColumn}>
+          <Modal.Header closeButton>
+            <Modal.Title>Store mail</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+                <Form.Label>To:</Form.Label> 
+                <Form.Control type="text" name="email address" ref={emailInputReference}></Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-3">
+                <Form.Label>Subject:</Form.Label> 
+                <Form.Control type="text" name="Subject" ref={subjectInputReference}></Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-3">
+                <Form.Label>Content:</Form.Label> 
+                <Form.Control type="text" name="Content" ref={contentInputReference}></Form.Control>
+            </Form.Group>
+            <Button variant="primary" type="submit" onClick={submitMail}>Store</Button>
+            </Form>
+            <Button variant="secondary" onClick={handleEmailClose}>Cancel</Button>
+          </Modal.Body>
+        </Modal>
+
+        <Modal show={projectModal} onHide={handleProjectClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Create Project</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+                <Form.Label>Project Name:</Form.Label> 
+                <Form.Control type="text" name="email address" ref={projectNameReference}></Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-3">
+                <Form.Label>Project Manager:</Form.Label> 
+                <Form.Control type="text" name="Subject" ref={managerNameReference}></Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-3">
+                <Form.Label>Client:</Form.Label> 
+                <Form.Control type="text" name="Content" ref={clientReference}></Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-3">
+                <Form.Label>Project Location:</Form.Label> 
+                <Form.Control type="text" name="Content" ref={locationReference}></Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-3">
+                <Form.Label>Project Completion Date:</Form.Label> 
+                <Form.Control type="text" name="Content" ref={completiondateReference}></Form.Control>
+            </Form.Group>
+            <Button variant="primary" type="submit" onClick={submitProject}>Store</Button>
+            </Form>
+
+            <Button variant="secondary" onClick={handleProjectClose}>Cancel</Button>
+          </Modal.Body>
+        </Modal>
+
+        <div id="content" className={styles.contentContainer}>
+          <Container fluid>
+            <Row>
+              <Col md="auto">
+                <select value={value} onChange={(e) => {
+                    setValue(e.target.value);
+                  }}>
+                    <option selected disabled>Select Project</option>
+                    {projectData.map((e:any, index:any) => {
+                      return( 
+                        <option value={e.projectName}>{e.projectName}</option>  
+                      ) 
+                    })}
+                  </select>
+              </Col>
+              <Col md="auto">
+                <Button variant="outline-primary" onClick={handleProjectShow}>Create Project</Button>
+              </Col>
+              <Col>
+                <Button variant="outline-primary" onClick={handleEmailShow}>Store Mail</Button>
+              </Col>
+            </Row>
+          </Container>
+          <div>
+            <Container fluid> 
+              <div className={styles.detailsContainer}>
+                <h4>Project Details</h4>
+                {projectData.map((e:any, index:any) => {
+                  if(e.projectName === value){
+                    return(
+                      <Container fluid>
+                        <Row>
+                          <Col md="auto">
+                            <p>Project Manager: {e.projectManager}</p>
+                            <p>Client: {e.projectClient}</p>
+                          </Col>
+                          <Col md="auto">
+                            <p>Completion date: {e.dueDate}</p>
+                            <p>Location: {e.projectLocation}</p>
+                          </Col>
+                        </Row>
+                      </Container>
+                    )
+                  }
+                })}
+              </div>
+            </Container>
           </div>
-        </div>
-        <h4>Project Resources</h4>
-        <div className={styles.componentContainer}>
-          <div id="mail" className={styles.mailContainer}>
-            <Table>
-              <thead>
-                <tr>
-                  <th>
-                    Mail
-                    <Button variant="primary" onClick={handleClick}>Store Mail</Button>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {emailData.map((e:any, index:any) => {
-                  // If the email is from or to the users current email when logged in and displays it accordingly
-                  if(e.to === `${user.email}` || e.sender === `${user.email}`){
+          
+          <Container fluid>
+          <h4>Project Resources</h4>
+            <Row>
+              <Col>
+                <div id="mail" className={styles.mailContainer}>
+                  <Table>
+                    <thead>
+                      <tr>
+                        <th>
+                          Mail
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {emailData.map((e:any, index:any) => {
+                        // If the email is from or to the users current email when logged in and displays it accordingly
+                        if(e.to === `${user.email}` || e.sender === `${user.email}`){
+                          if(e.project === value){
+                            return(
+                              // Returning the component to be rendered by next.js
+                              <div>
+                                <tr key={`${e.sender}_{e.content}`} className={styles.innerMailContainer}>
+                                  <th>
+                                    From: {e.sender}
+                                  </th>
+                                  <th>
+                                    To: {e.to}
+                                  </th>
+                                  <th>
+                                    Subject: {e.subject}
+                                  </th>
+                                  <p id="emailContent">
+                                    {e.content}
+                                  </p>
+                                  <th>
+                                    <a onClick={() => {
+                                      console.log(e);
+                                      console.log(emailData);
+                                      for(var i=0; i<emailData.length; i++){
+                                        console.log(emailData[i])
+                                        if(emailData[i].mailID === e.mailID){
+                                          console.log("Got it", e.mailID);
+
+                                          break;
+                                        }
+                                      }
+                                    }}>Delete</a>
+                                  </th>
+                                </tr>
+                              </div>
+                            )
+                          }
+                          }
+                      })}
+                    </tbody>
+                  </Table>
+                </div>
+              </Col>
+              <Col>
+                <div id="files" className={styles.fileContainer}>
+                  <Table striped bordered hover>
+                    <thead>
+                      <tr>
+                        <th>Files</th>
+                        <th>
+                          <Form onSubmit={handleSubmit} className={styles.fileImportForm}>
+                            <Form.Control type='file' className={styles.fileImport}/>
+                            <Button variant="primary" type='submit'>Upload</Button>
+                          </Form>
+                        </th>
+                      </tr>
+                    </thead>
+                  </Table>
+                  <div> 
+                  {fileData.map((e:any, index:any) => {
                     if(e.project === value){
                       return(
-                        // Returning the component to be rendered by next.js
-                        <div>
-                          <tr key={`${e.sender}_{e.content}`} className={styles.innerMailContainer}>
-                            <th>
-                              From: {e.sender}
-                            </th>
-                            <th>
-                              To: {e.to}
-                            </th>
-                            <th>
-                              Subject: {e.subject}
-                            </th>
-                            <p id="emailContent">
-                              {e.content}
-                            </p>
-                            <th>
-                              <a onClick={() => {
-                                console.log(e);
-                                console.log(emailData);
-                                for(var i=0; i<emailData.length; i++){
-                                  console.log(emailData[i])
-                                  if(emailData[i].mailID === e.mailID){
-                                    console.log("Got it", e.mailID);
-
-                                    break;
+                        <p key={`${e.dateAdded}_{e.fileName}`}>
+                          <div>
+                            <div>
+                            <Container>
+                              <a>{e.fileName}</a>
+                              
+                                <Button variant="success" size="sm" onClick={ ()=> {
+                                    // Create reference to the storage bucket
+                                  const storage = getStorage();
+                                  // Get the download url from the bucket
+                                  getDownloadURL(ref(storage, `files/${e.fileName}`)).then((url:any) => {
+                                    // Create a request to the server to download the file and its content
+                                    const xhr = new XMLHttpRequest();
+                                    xhr.responseType = 'blob';
+                                    xhr.onload = (event) => {
+                                      const blob = xhr.response;
+                                    };
+                                    xhr.open('GET', url);
+                                    xhr.send();
+                                  })
+                                }}>
+                                  Download
+                                </Button>
+                                <Button variant="outline-danger" size="sm" onClick={ ()=> {
+                                  // Writing within an async function for smoother performance
+                                  const handleFileDelete = async () => {
+                                    // Ref to the database
+                                    const firestore = getFirestore(firebase);
+                                    // Ref to the storage bucket
+                                    const storage = getStorage();
+                                    // Ref to a specific file in the storage bucket
+                                    const storageRef = ref(storage, `files/${e.fileName}`);
+                                    // When all of above is done we'll delete the document in the database
+                                    await deleteDoc(doc(firestore, "files", `${e.fileName}`));
+                                    // Now we'll delete the file in the storage bucket
+                                    deleteObject(storageRef).then(() => {
+                                      // Was it successfull?
+                                      alert(`Deleted ${e.fileName} successfully`)
+                                    }).catch((error) => {
+                                      // Was there an error
+                                      alert("Couldn't delete file")
+                                      console.log(error);
+                                    })  
+                                    // Force reload the page
+                                    window.location.reload()
                                   }
-                                }
-                              }}>Delete</a>
-                            </th>
-                          </tr>
-                        </div>
-                      )
+                                  // Running the function
+                                  handleFileDelete();
+                                }}> Delete</Button>
+                              </Container>
+                            </div>
+                          </div>
+                        </p>
+                        )
                     }
-                    }
-                })}
-              </tbody>
-            </Table>
+                    })}
+                  </div>
+                </div>
+              </Col>
+            </Row>
+          </Container>
+          
+          <div className={styles.sendMailContainer}>
+            {/* Shows when the user presses the button */}
+            {isShown && (
+              // A form for sending email
+              <Form className={styles.sendMailForm}>
+                <Form.Group className="mb-3">
+                    <Form.Label>To:</Form.Label> 
+                    <Form.Control type="text" name="email address" ref={emailInputReference}></Form.Control>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                    <Form.Label>Subject:</Form.Label> 
+                    <Form.Control type="text" name="Subject" ref={subjectInputReference}></Form.Control>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                    <Form.Label>Content:</Form.Label> 
+                    <Form.Control type="text" name="Content" ref={contentInputReference}></Form.Control>
+                </Form.Group>
+                <Button variant="primary" type="submit" onClick={submitMail}>Submit</Button>
+              </Form>
+            )}
           </div>
-          <div id="files" className={styles.fileContainer}>
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th>Files</th>
-                  <th>
-                    <Form onSubmit={handleSubmit} className={styles.fileImportForm}>
-                      <Form.Control type='file' className={styles.fileImport}/>
-                      <Button variant="primary" type='submit'>Upload</Button>
-                    </Form>
-                  </th>
-                </tr>
-              </thead>
-            </Table>
-            <div> 
-            {fileData.map((e:any, index:any) => {
-              if(e.project === value){
-                return(
-                  <p key={`${e.dateAdded}_{e.fileName}`}>
-                    <div>
-                      <div>
-                        <a>{e.fileName}</a>
-                        <a onClick={ ()=> {
-                          // Writing within an async function for smoother performance
-                          const handleFileDelete = async () => {
-                            // Ref to the database
-                            const firestore = getFirestore(firebase);
-                            // Ref to the storage bucket
-                            const storage = getStorage();
-                            // Ref to a specific file in the storage bucket
-                            const storageRef = ref(storage, `files/${e.fileName}`);
-                            // When all of above is done we'll delete the document in the database
-                            await deleteDoc(doc(firestore, "files", `${e.fileName}`));
-                            // Now we'll delete the file in the storage bucket
-                            deleteObject(storageRef).then(() => {
-                              // Was it successfull?
-                              alert(`Deleted ${e.fileName} successfully`)
-                            }).catch((error) => {
-                              // Was there an error
-                              alert("Couldn't delete file")
-                              console.log(error);
-                            })  
-                            // Force reload the page
-                            window.location.reload()
-                          }
-                          // Running the function
-                          handleFileDelete();
-                        }}> Delete</a>
-                      </div>
-                    </div>
-                  </p>
-                  )
-              }
-              })}
-            </div>
-          </div>
-        </div>
-        <div className={styles.sendMailContainer}>
-          {/* Shows when the user presses the button */}
-          {isShown && (
-            // A form for sending email
-            <Form>
-              <Form.Group className="mb-3">
-                  <Form.Label>To:</Form.Label> 
-                  <Form.Control type="text" name="email address" ref={emailInputReference}></Form.Control>
-              </Form.Group>
-              <Form.Group className="mb-3">
-                  <Form.Label>Subject:</Form.Label> 
-                  <Form.Control type="text" name="Subject" ref={subjectInputReference}></Form.Control>
-              </Form.Group>
-              <Form.Group className="mb-3">
-                  <Form.Label>Content:</Form.Label> 
-                  <Form.Control type="text" name="Content" ref={contentInputReference}></Form.Control>
-              </Form.Group>
-              <Button variant="primary" type="submit" onClick={submitMail}>Submit</Button>
-            </Form>
-          )}
         </div>
       </div>
-    </div>
+    </Container>
+    
   )
 }
 

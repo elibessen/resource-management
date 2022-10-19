@@ -21,11 +21,6 @@ const NavbarComp = () => {
           <Nav>
             {user ? (
               <div className={styles.flexRow}>
-
-                <Nav.Link>
-                  Create Project
-                </Nav.Link>
-
                 <Nav.Link
                   onClick={() => {
                     logout()

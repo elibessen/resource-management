@@ -14,23 +14,17 @@
     font-size: 1.5rem;
 }
 
-.calendarContainer{
-    border: 1px solid black;
-    font-size: 1rem;
-}
-
-.calendarContainer h1{
-    font-size: 1.5rem;
-}
-
 .fileContainer{
     border: 1px solid rgb(226, 226, 226);
     font-size: 1rem;
-    width: 30rem;
 }
 
 .fileContainer h1{
     font-size: 1.5rem;
+}
+
+.fileContainer a{
+    padding: 1rem;
 }
 
 .innerMailContainer{
@@ -90,6 +84,11 @@
     display: flex;
     flex-direction: row;
 }
+.flexColumn{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
 
 .componentContainer{
     display: flex;
@@ -99,5 +98,16 @@
 
 .sendMailContainer{
     display: flex;
-    justify-content: center;
+    justify-content: center;    
+}
+
+.sendMailForm{
+    border: 1.5px solid rgb(237, 237, 237);
+    padding: 1rem 2rem;
+    border-radius: 1rem;
+}
+
+.detailsContainer{
+    border: 1px solid rgb(226, 226, 226);
+    padding: 0.5rem
 }
