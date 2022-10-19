@@ -139,7 +139,7 @@ const Dashboard = () => {
   return (
     <Container fluid>
       <div>
-
+        
         <Modal show={emailModal} onHide={handleEmailClose} className={styles.flexColumn}>
           <Modal.Header closeButton>
             <Modal.Title>Store mail</Modal.Title>
@@ -282,16 +282,22 @@ const Dashboard = () => {
                                   </p>
                                   <th>
                                     <a onClick={() => {
-                                      console.log(e);
                                       console.log(emailData);
                                       for(var i=0; i<emailData.length; i++){
                                         console.log(emailData[i])
                                         if(emailData[i].mailID === e.mailID){
                                           console.log("Got it", e.mailID);
-
+                                          emailData.splice(i, 1)
+                                          console.log(emailData)
                                           break;
                                         }
                                       }
+                                      const updateMail = async () => {
+                                        return await setDoc(doc(firestore, 'mail', 'mailData'), {
+                                          'data': emailData
+                                        })
+                                      }
+                                      updateMail()
                                     }}>Delete</a>
                                   </th>
                                 </tr>
